@@ -1,35 +1,70 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { createContext, useContext, useEffect, useState } from "react";
+import Login from "./components/logins/Login";
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+  useNavigate,
+} from "react-router-dom";
+import Home from "./components/Home";
+import Register from "./components/logins/Register";
+import Admin from "./components/admins/Admin";
+import Cars from "./components/admins/Cars";
+import Layout from "./components/layouts/Layout";
+import Cookies from "js-cookie";
+import PrivateRoutes from "./components/PrivateRoutes";
 
-function App() {
-  const [count, setCount] = useState(0)
+const MyContext = createContext();
+
+export const useMyContext = () => {
+  return useContext(MyContext);
+};
+
+const App = () => {
+  const [myState, setMyState] = useState("Initial Value");
+  const [statusLogin, setStatusLogin] = useState(localStorage.getItem("role") || "");
+  const [openSideBar, setOpenSideBar] = useState(false);
+  // const [token , setToken] = useState(Cookies.get("token") )
+  const [token , setToken] = useState(localStorage.getItem('next_token') || "" )
+
+
+  const contextValue = {
+    myState,
+    // updateState,
+    statusLogin,
+    openSideBar,
+    setOpenSideBar,
+    token
+  };
+//  const getToken = ()=>{
+//    setToken( Cookies.get("token"))
+//  }
+
+
+  useEffect(() => {
+    // getToken()
+
+  // console.log("Stored Token:", token);
+  
+  }, [statusLogin]);
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <MyContext.Provider value={contextValue}>
+      <BrowserRouter>
+        {!token ? (
+          <Routes basename="/app-booking-car" >
+            <Route  path="/" element={<Login />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="*" element={<Navigate to="/login" />} />
+          </Routes>
+        ) : (
+          <PrivateRoutes />
+        )}
+      </BrowserRouter>
+    </MyContext.Provider>
+  );
+};
 
-export default App
+export default App;
